@@ -17,7 +17,8 @@ const uint8_t rNum = 5; //number of retries that will be attempted
 const uint8_t chan1 = 2; //D2 pin for node channel check
 const uint8_t chan2 = 3; //D3 pin for node channel check
 const uint8_t chan3 = 4; //D4 pin for node channel check
-const uint8_t isconnected = 3;
+
+const uint8_t isconnected = 5;
 const unsigned long pingInterval = 1000;// ms;
 unsigned long last_sent;   
 const uint8_t button = 8;
@@ -25,8 +26,9 @@ bool alarm = false;
 
 //stuct of payload to send fake sensor data and node channel
 struct PayLoad {
-  uint8_t chan;
-  uint8_t sensor;
+  uint8_t address;
+  uint8_t alarm;
+  bool battstat;
 };
 
 PayLoad payload; //create struct object
@@ -40,7 +42,6 @@ void setup() {
   pinMode(isconnected, OUTPUT);
   pinMode(button, HIGH);
   digitalWrite(button,HIGH);// activate internal pull-up
-  alarm = false;
   
   wirelessSPI.begin();  //Start the nRF24 module
   wirelessSPI.setChannel(rFChan); 
@@ -52,7 +53,7 @@ void setup() {
   setChannel();  //checks current channel setting for transceiver
   digitalWrite(isconnected, LOW);
   Serial.println("Button node is ready...");
-  payload.sensor = 0; //button not pressed
+  payload.alarm = 0; //button not pressed
 }
 
 void loop() {
@@ -62,8 +63,7 @@ void loop() {
   //moet eigenlijke met een interupt
   if (digitalRead(button)==LOW){
     Serial.println("ALARM");
-    payload.sensor = 1;
-    alarm = true; 
+    payload.alarm = 1;
   }
 
   if (now - last_sent >= pingInterval ) { 
@@ -86,12 +86,9 @@ void loop() {
      else
      {
           Serial.println("payload SEND");
-          Serial.print("alarm :");
-          Serial.println(payload.sensor);
           digitalWrite(isconnected, HIGH);
-          if(alarm){
-            payload.sensor = 0;
-            alarm = false;
+          if(payload.alarm == 1){
+            payload.alarm = 0;
           }
        }  
   }
@@ -101,12 +98,12 @@ void loop() {
 
 //check for low digital pin to set node address
 void setChannel() {
-  if(!digitalRead(chan1)) payload.chan = 1;
-  else if(!digitalRead(chan2)) payload.chan = 2;
-  else if(!digitalRead(chan3)) payload.chan = 3;
-  else payload.chan = 0;
+  if(!digitalRead(chan1)) payload.address = 1;
+  else if(!digitalRead(chan2)) payload.address = 2;
+  else if(!digitalRead(chan3)) payload.address = 3;
+  else payload.address = 0;
 
   Serial.print("Node channel: ");
-  Serial.println(payload.chan);
+  Serial.println(payload.address);
   
 }
