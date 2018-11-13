@@ -20,7 +20,7 @@ RF24 wirelessSPI(pinCE, pinCSN); // Declare object from nRF24 library (Create yo
 const uint64_t rAddress = 0xB00B1E50C3LL;  //Create pipe address for the network and notice I spelled boobies because I am mature, the "LL" is for LongLong type
 const uint8_t rFChan = 89; //Set channel frequency default (chan 84 is 2.484GHz to 2.489GHz)
 const int buzzer = 2; 
-const unsigned long interval = 5000;// 5s;
+const unsigned long interval = 8000;// 8s;
 unsigned long last_clear;  
 
 //Create a structure to hold fake sensor data and channel data  
