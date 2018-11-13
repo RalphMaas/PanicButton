@@ -19,14 +19,16 @@ const uint8_t pinCSN = 10; //This pin is used for SPI comm chip select
 RF24 wirelessSPI(pinCE, pinCSN); // Declare object from nRF24 library (Create your wireless SPI) 
 const uint64_t rAddress = 0xB00B1E50C3LL;  //Create pipe address for the network and notice I spelled boobies because I am mature, the "LL" is for LongLong type
 const uint8_t rFChan = 89; //Set channel frequency default (chan 84 is 2.484GHz to 2.489GHz)
+
 const int buzzer = 2; 
 const unsigned long interval = 8000;// 8s;
 unsigned long last_clear;  
 
 //Create a structure to hold fake sensor data and channel data  
 struct PayLoad {
-  uint8_t chan;
-  uint8_t sensor;
+  uint8_t address;
+  uint8_t alarm;
+  bool battstat;
 };
 
 PayLoad payload; //create struct object
@@ -56,24 +58,24 @@ void loop() {
      wirelessSPI.read(&payload, sizeof(payload)); //read packet of data and store it in struct object
 
      Serial.print("ping from node: ");
-     Serial.println(payload.chan); //print node number or channel
+     Serial.println(payload.address); //print node number or channel
      
-     if (payload.sensor == 1){
-      Alarm();
+     if (payload.alarm == 1){
+      SetAlarm();
      }
   }
 
   InitDisplay();
 }
 
-void Alarm()
+void SetAlarm()
 {
    tone(buzzer, 1000);
    lcd.clear();
    lcd.setCursor(2,0);
    lcd.print("PANIC BUTTON ");
    lcd.setCursor(8,1);
-   lcd.print(payload.chan);
+   lcd.print(payload.address);
 }
 
 void InitDisplay()
